@@ -2,9 +2,18 @@ const express = require("express");
 const todoRoutes = require("./routes/todoRoutes");
 const authRoutes = require("./routes/auth"); // ✅ 1. استيراد مسارات المصادقة
 const authMiddleware = require("./middlewares/auth"); // ✅ 2. استيراد ميدلوير الحماية
+const cors = require('cors'); // ✅ تأكد من تثبيتها: npm install cors
 
 const app = express();
- 
+
+// ✅ إعداد CORS
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173', // ديناميكي للإنتاج
+    credentials: true, // للسماح بإرسال الكوكيز والتوكنز
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
+}));
+
 // Middleware
 app.use(express.json());
 
