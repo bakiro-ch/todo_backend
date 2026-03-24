@@ -16,10 +16,10 @@ exports.getAllTodos = async (req, res) => {
   try {
     // ✅ نضيف شرط WHERE لجلب مهام المستخدم المسجل فقط
     const [rows] = await db.query(
-        "SELECT * FROM task WHERE user_id = ? ORDER BY due_date ASC", 
-        [req.user.id]
+      "SELECT * FROM task WHERE user_id = ? ORDER BY due_date ASC",
+      [req.user.id],
     );
-    res.json(rows);
+    res.status(200).json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -36,16 +36,23 @@ exports.getAllTodos = async (req, res) => {
  *   500 : Database or server error
  */
 exports.createTodo = async (req, res) => {
-  const { title, status, description, due_date } = req.body;
-  
+  const { title, status, description, due_date, priority } = req.body;
+
   // ✅ نأخذ user_id من التوكن (لا نثق في البيانات القادمة من الـ Body)
   const userId = req.user.id;
 
   try {
     const [result] = await db.query(
       // ✅ نضيف user_id في جملة الإدخال
-      "INSERT INTO task (title, status, description, due_date, user_id) VALUES (?,?,?,?,?)",
-      [title, status ?? 'not_completed', description, due_date, userId], 
+      "INSERT INTO task (title, status, description, due_date, user_id, priority) VALUES (?,?,?,?,?,?)",
+      [
+        title,
+        status ?? "not_completed",
+        description,
+        due_date,
+        userId,
+        priority,
+      ],
     );
 
     res.status(201).json({
@@ -55,15 +62,15 @@ exports.createTodo = async (req, res) => {
         title,
         description,
         due_date,
-        status: status ?? 'not_completed',
-        user_id: userId // ✅ نرجعه للفرونت إند للتأكيد
+        status: status ?? "not_completed",
+        priority: priority,
+        user_id: userId, // ✅ نرجعه للفرونت إند للتأكيد
       },
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 /**
  * @desc Update a todo (if owned by user)
@@ -78,13 +85,13 @@ exports.createTodo = async (req, res) => {
  */
 exports.updateTodo = async (req, res) => {
   try {
-    const { title, description, due_date, status } = req.body;
+    const { title, description, due_date, status, priority } = req.body;
     const id = parseInt(req.params.id, 10);
 
     // 1️⃣ تحقق من وجود المهمة وَأنها تابعة للمستخدم الحالي
     const [existing] = await db.query(
-        "SELECT * FROM task WHERE id = ? AND user_id = ?", 
-        [id, req.user.id]
+      "SELECT * FROM task WHERE id = ? AND user_id = ?",
+      [id, req.user.id],
     );
 
     if (existing.length === 0) {
@@ -94,22 +101,20 @@ exports.updateTodo = async (req, res) => {
     // 2️⃣ تحديث (نستخدم القيم القديمة إذا لم تُرسل جديدة)
     const [result] = await db.query(
       `UPDATE task 
-       SET title = ?, description = ?, due_date = ?, status = ?
+       SET title = ?, description = ?, due_date = ?, status = ?, priority = ?
        WHERE id = ?`,
       [
         title ?? existing[0].title,
         description ?? existing[0].description,
         due_date ?? existing[0].due_date,
         status ?? existing[0].status,
+        priority ?? existing[0].priority,
         id,
       ],
     );
 
     // 3️⃣ إعادة المهمة بعد التحديث
-    const [updated] = await db.query(
-        "SELECT * FROM task WHERE id = ?", 
-        [id]
-    );
+    const [updated] = await db.query("SELECT * FROM task WHERE id = ?", [id]);
 
     res.status(200).json({
       message: "Todo has been updated",
@@ -136,8 +141,8 @@ exports.getSingleTodo = async (req, res) => {
 
     // ✅ نتحقق أن المهمة تابعة للمستخدم الحالي (شرط مزدوج)
     const [result] = await db.query(
-        "SELECT * FROM task WHERE id = ? AND user_id = ?", 
-        [id, req.user.id]
+      "SELECT * FROM task WHERE id = ? AND user_id = ?",
+      [id, req.user.id],
     );
 
     if (result.length === 0) {
@@ -150,7 +155,6 @@ exports.getSingleTodo = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
 
 /**
  * @desc Delete a todo (if owned by user)
@@ -168,8 +172,8 @@ exports.deleteTodo = async (req, res) => {
 
     // ✅ نحذف فقط إذا كانت المهمة موجودة وتابعة للمستخدم
     const [result] = await db.query(
-        "DELETE FROM task WHERE id = ? AND user_id = ?", 
-        [id, req.user.id]
+      "DELETE FROM task WHERE id = ? AND user_id = ?",
+      [id, req.user.id],
     );
 
     if (result.affectedRows === 0) {
