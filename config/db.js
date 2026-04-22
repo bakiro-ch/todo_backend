@@ -1,5 +1,7 @@
 require("dotenv").config();
 const mysql = require("mysql2");
+const fs = require('fs');
+
 
 // const pool = mysql.createPool({
 //   host: process.env.DB_HOST,
@@ -16,6 +18,10 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
+    ssl: {
+    ca: fs.readFileSync(process.env.TIDB_CA_PATH),
+    rejectUnauthorized: true
+  },
   waitForConnections: true,
   connectionLimit: 10,
   connectTimeout: 60000,
@@ -32,7 +38,7 @@ const db = pool.promise();
 //   .catch((err) => console.log("❌ Database connection failed:", err));
 
 db.query("SELECT 1")
-  .then(() => console.log("✅ Connected to FreeSQLDatabase"))
+  .then(() => console.log("✅ Connected to Database"))
   .catch((err) => {
     console.log("❌ Database connection failed:", err.message);
     console.log("Error Code:", err.code);
