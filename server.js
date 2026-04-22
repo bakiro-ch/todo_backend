@@ -12,7 +12,4 @@
 
 // server.js
 const app = require("./app");
-
-// في بيئة Serverless مثل Vercel، لا نستخدم app.listen()
-// نقوم بتصدير التطبيق ليتم التعامل معه بواسطة منصة Vercel
 module.exports = app;
