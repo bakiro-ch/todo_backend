@@ -20,7 +20,7 @@ const pool = mysql.createPool({
   port: parseInt(process.env.DB_PORT) || 4000,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
-  database: process.env.DB_DB,
+  database: process.env.DB_NAME,
   ssl: {
     ca: getCaCert(),                 // هنا نمرر الشهادة كنص أو Buffer
     rejectUnauthorized: true
