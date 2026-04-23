@@ -8,8 +8,8 @@ const app = express();
 
 // ✅ إعداد CORS
 app.use(cors({
-    // origin: process.env.FRONTEND_URL || 'http://localhost:5173', // ديناميكي للإنتاج
-        origin: '*', // جرب النجمة أولاً للتأكد من العمل
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173', // ديناميكي للإنتاج
+        // origin: '*', // جرب النجمة أولاً للتأكد من العمل
 
     credentials: true, // للسماح بإرسال الكوكيز والتوكنز
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
