@@ -2,7 +2,8 @@ const Joi = require("joi");
 
 exports.todoPostSchema = Joi.object({
   title: Joi.string().trim().max(150).required(),
-  description: Joi.string().trim().max(500).optional(),
+    description: Joi.string().trim().optional(),
+  // description: Joi.string().trim().max(500).optional(),
   due_date: Joi.date().optional(),
   status: Joi.string()
     .trim()
